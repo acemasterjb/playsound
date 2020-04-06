@@ -108,7 +108,7 @@ class playsoundWin(playsoundBase):
             self.alias = alias
         self.close_alias()
         try:
-            self.winCommand('open "' + sound + '" alias', self.alias)
+            self.winCommand(f'open "{sound}" alias', self.alias)
         except PlaysoundException as e:
             # ignore duplicate alias
             if self.mcierr_duplicate_alias not in str(e):
@@ -132,9 +132,10 @@ class playsoundWin(playsoundBase):
         lengthInMS = self.winCommand('status', self.alias, 'length')
         currentPositionInMS = self.winCommand('status', self.alias, 'position')
         durationInMS = int(lengthInMS) - int(currentPositionInMS)
-        self.resume_audio()
-        if block:
-            self._manage_block(durationInMS)
+        if durationInMS > 0:
+            self.resume_audio()
+            if block:
+                self._manage_block(durationInMS)
 
 
 class playsoundOSX(playsoundBase):
