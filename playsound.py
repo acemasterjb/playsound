@@ -76,6 +76,13 @@ class playsoundWin(playsoundBase):
     def resume_audio(self):
         self.winCommand('resume', self.alias)
 
+    def get_duration_of_audio(self):
+        duration = self.winCommand('status', self.alias, 'length')
+        return duration
+
+    def get_status(self):
+        return self.winCommand('status', self.alias, 'mode').decode("utf-8")
+
     def winCommand(self, *command):
         buf = c_buffer(255)
         command = ' '.join(command).encode(getfilesystemencoding())
@@ -88,20 +95,18 @@ class playsoundWin(playsoundBase):
                 + command.decode() + '\n    ' + errorBuffer.value.decode())
             raise PlaysoundException(exceptionMessage)
         return buf.value
+    
 
-    def _manage_block(self, durationInMS):
+    
+    def _manage_block(self):
         self.stop_sound = False
         self.pause_audio = False
         start_time = time()
-        while time() - start_time < float(durationInMS) / 1000.0:
+        while True:
             sleep(0.1)
-            if self.stop_sound is True:
-                self.stop_audio()
-                self.stop_sound = False
+            status = self.get_status()
+            if status == "stopped":
                 break
-            if self.pause_sound is True:
-                self.pause_audio()
-                self.pause_audio = False
         
     def play(self, sound, block=True, alias=None):
         if alias:
@@ -113,11 +118,9 @@ class playsoundWin(playsoundBase):
             # ignore duplicate alias
             if self.mcierr_duplicate_alias not in str(e):
                 raise e
-        self.winCommand('set', self.alias, 'time format milliseconds')
-        durationInMS = self.winCommand('status', self.alias, 'length')
-        self.winCommand('play', self.alias, 'from 0 to', durationInMS.decode())
+        self.winCommand('play', self.alias)
         if block:
-            self._manage_block(durationInMS)
+            self._manage_block()
 
     def stop(self):
         self.stop_sound = True
@@ -129,13 +132,10 @@ class playsoundWin(playsoundBase):
     
     def resume(self, block=True):
         self.pause_sound = False
-        lengthInMS = self.winCommand('status', self.alias, 'length')
-        currentPositionInMS = self.winCommand('status', self.alias, 'position')
-        durationInMS = int(lengthInMS) - int(currentPositionInMS)
-        if durationInMS > 0:
+        if self.get_status() == 'paused':
             self.resume_audio()
             if block:
-                self._manage_block(durationInMS)
+                self._manage_block()
 
 
 class playsoundOSX(playsoundBase):
