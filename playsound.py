@@ -117,7 +117,6 @@ class playsoundWin(playsoundBase):
                 raise e
         self.winCommand('set', self.alias, 'time format milliseconds')
         durationInMS = self.winCommand('status', self.alias, 'length')
-        print(durationInMS)
         self.winCommand('play', self.alias, 'from 0 to', durationInMS.decode())
         if block:
             self._manage_block(durationInMS)
