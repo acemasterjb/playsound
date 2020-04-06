@@ -83,6 +83,20 @@ class playsoundWin(playsoundBase):
             raise PlaysoundException(exceptionMessage)
         return buf.value
 
+    def _manage_block(self, durationInMS):
+        self.stop_sound = False
+        self.pause_audio = False
+        start_time = time()
+        while time() - start_time < float(durationInMS) / 1000.0:
+            sleep(0.1)
+            if self.stop_sound is True:
+                self.stop_audio()
+                self.stop_sound = False
+                break
+            if self.pause_sound is True:
+                self.pause_audio()
+                self.pause_audio = False
+        
     def play(self, sound, block=True, alias=None):
         if alias:
             self.alias = alias
@@ -95,20 +109,10 @@ class playsoundWin(playsoundBase):
                 raise e
         self.winCommand('set', self.alias, 'time format milliseconds')
         durationInMS = self.winCommand('status', self.alias, 'length')
+        print(durationInMS)
         self.winCommand('play', self.alias, 'from 0 to', durationInMS.decode())
         if block:
-            self.stop_sound = False
-            self.pause_audio = False
-            start_time = time()
-            while time() - start_time < float(durationInMS) / 1000.0:
-                sleep(0.1)
-                if self.stop_sound is True:
-                    self.stop_audio()
-                    self.stop_sound = False
-                    break
-                if self.pause_sound is True:
-                    self.pause_audio()
-                    self.pause_audio = False
+            self._manage_block(durationInMS)
 
     def stop(self):
         self.stop_sound = True
@@ -118,9 +122,15 @@ class playsoundWin(playsoundBase):
         self.pause_sound = True
         self.pause_audio()
     
-    def resume(self):
+    def resume(self, block=True):
         self.pause_sound = False
+        lengthInMS = self.winCommand('status', self.alias, 'length')
+        currentPositionInMS = self.winCommand('status', self.alias, 'position')
+        durationInMS = int(lengthInMS) - int(currentPositionInMS)
         self.resume_audio()
+        if block:
+            self._manage_block(durationInMS)
+
 
 class playsoundOSX(playsoundBase):
     def play(self, sound, block=True):
