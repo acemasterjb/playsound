@@ -30,7 +30,6 @@ elif operating_system == 'Linux':
 class PlaysoundException(Exception):
     pass
 
-
 class playsoundBase(ABC):
     def __init__(self):
         pass
@@ -51,12 +50,11 @@ class playsoundBase(ABC):
     def resume(self, block):
         raise NotImplemented
 
-
 class playsoundWin(playsoundBase):
     mcierr_duplicate_alias = 'Error 289 for command'
 
     def __init__(self):
-        self.alias = 'playsound_alias'
+        self.alias = f'playsound_alias_{id(self)}'
         self.stop_sound = False
         self.pause_sound = False
 
