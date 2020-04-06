@@ -50,6 +50,7 @@ class playsoundWin(playsoundBase):
     def __init__(self):
         self.alias = 'playsound_alias'
         self.stop_sound = False
+        self.pause_sound = False
 
     def close_alias(self):
         """
@@ -62,6 +63,12 @@ class playsoundWin(playsoundBase):
 
     def stop_audio(self):
         self.winCommand('stop', self.alias)
+
+    def pause_audio(self):
+        self.winCommand('pause', self.alias)
+    
+    def resume_audio(self):
+        self.winCommand('resume', self.alias)
 
     def winCommand(self, *command):
         buf = c_buffer(255)
@@ -91,6 +98,7 @@ class playsoundWin(playsoundBase):
         self.winCommand('play', self.alias, 'from 0 to', durationInMS.decode())
         if block:
             self.stop_sound = False
+            self.pause_audio = False
             start_time = time()
             while time() - start_time < float(durationInMS) / 1000.0:
                 sleep(0.1)
@@ -98,10 +106,21 @@ class playsoundWin(playsoundBase):
                     self.stop_audio()
                     self.stop_sound = False
                     break
+                if self.pause_sound is True:
+                    self.pause_audio()
+                    self.pause_audio = False
 
     def stop(self):
         self.stop_sound = True
         self.stop_audio()
+    
+    def pause(self):
+        self.pause_sound = True
+        self.pause_audio()
+    
+    def resume(self):
+        self.pause_sound = False
+        self.resume_audio()
 
 class playsoundOSX(playsoundBase):
     def play(self, sound, block=True):
