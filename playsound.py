@@ -48,7 +48,7 @@ class playsoundBase(ABC):
         raise NotImplemented
 
     @abstractmethod
-    def resume(self):
+    def resume(self, block):
         raise NotImplemented
 
 
