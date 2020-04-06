@@ -43,6 +43,14 @@ class playsoundBase(ABC):
     def stop(self):
         raise NotImplemented
 
+    @abstractmethod
+    def pause(self):
+        raise NotImplemented
+
+    @abstractmethod
+    def resume(self):
+        raise NotImplemented
+
 
 class playsoundWin(playsoundBase):
     mcierr_duplicate_alias = 'Error 289 for command'
