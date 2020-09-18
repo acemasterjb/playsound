@@ -139,6 +139,12 @@ class playsoundWin(playsoundBase):
 
 
 class playsoundOSX(playsoundBase):
+    def __init__(self):
+        self.nssound = None
+        self.stop_sound = False
+        self.pause_sound = False
+        self.is_playing = False
+
     def play(self, sound, block=True):
         '''
         Utilizes AppKit.NSSound. Tested and known to work with MP3 and WAVE on
@@ -158,18 +164,38 @@ class playsoundOSX(playsoundBase):
                 sound = getcwd() + '/' + sound
             sound = 'file://' + sound
         url = NSURL.URLWithString_(sound)
-        nssound = NSSound.alloc().initWithContentsOfURL_byReference_(url, True)
-        if not nssound:
+        self.nssound = NSSound.alloc().initWithContentsOfURL_byReference_(url, True)
+        if not self.nssound:
             raise IOError('Unable to load sound named: ' + sound)
-        nssound.play()
+        self.is_playing = True
+        self.nssound.play()
 
         if block:
-            sleep(nssound.duration())
+            sleep(self.nssound.duration())
 
     def stop(self):
-        raise NotImplemented
+        self.stop_sound = True
+        if self.nssound and self.is_playing:
+            self.nssound.stop()
+        else:
+            pass
 
+    def resume(self, block):
+        if self.nssound and self.paused:
+            self.paused = False
+            self.nssound.resume()
+            if block:
+                sleep(self.nssound.duration())
+        else:
+            pass
 
+    def pause(self):
+        self.pause_sound = True
+        if self.nssound:
+            self.nssound.pause()
+        else:
+            pass
+        
 class playsoundNix(playsoundBase):
     def play(self, sound, block=True):
         """Play a sound using GStreamer.
